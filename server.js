@@ -121,8 +121,8 @@ app.post('/doctor/:id/authorize', (req, res) => {
       } else if (storedHash === '') {
         console.log("ETH_WARNING: Skipping verification: Record hash not found on ethereum")
       } else if (recordHash !== storedHash) {
-        console.log("ETH_WARNING: MedicalRecords tempered with: Healthrecord hash is " + recordHash + ", and blockchain hash is " + storedHash);
-        return res.status(404).send("ERROR: Hash of healthrecord: " + recordHash + " does not equate to hash on blockchain: " + storedHash);
+        console.log("ETH_ERROR: MedicalRecords tempered with: Healthrecord hash is " + recordHash + ", and blockchain hash is " + storedHash);
+        // return res.status(404).send("ERROR: Hash of healthrecord: " + recordHash + " does not equate to hash on blockchain: " + storedHash);
       } else {
         console.debug("Healthrecord hash is " + recordHash + ", and blockchain hash is " + storedHash);
         console.log("Hashes are equal - verified healthrecord with blockchain successfully.");
@@ -259,15 +259,40 @@ app.post('/healthrecord/:id', (req, res) => {
   console.log("**** POST /healthrecord/:id ****");
   console.log(req.body)
 
-  // update hash of HR on blockchain
-  console.log("Checking hash of HR on blockchain - to see if update of hash is necessary")
+  healthrecord = req.body.healthrecord;
+  if (!healthrecord) res.status(404).send("There must be a healthrecord specified in the body.");
 
-  console.log("Healthrecord is not in blockchain - no update necessary.")
-
-  // store updated HR on db
   HealthRecord.update({_id: req.params.id}, req.body, function(err, update, resp) {
     if (err) return res.status(500).send("There was a problem updating the healthrecord in the database.");
-    res.status(200).send("Successfully updated.");
+    console.log("Successfully updated healthrecord in the db.");
+  });
+
+  // update hash of HR on blockchain
+  console.log("Checking hash of HR on blockchain - to see if update of hash is necessary")
+  let recordHash = crypto.computeStringHash(healthrecord);
+
+  truffle_connect.getRecordHash(patientID, CONTRACT_MANAGER, (answer) => {
+    let storedHash = answer;
+
+    if (answer === "ERROR 404") {
+      console.log("ETH_WARNING: Skipping update: Encountered internal error when trying to get record hash from ethereum");
+      return res.status(200).send("Succesfully updated heathrecord, but encountered error connecting to ethereum");
+    } else if (storedHash === '') {
+      console.log("ETH_WARNING: Skipping update: Record hash not stored on ethereum")
+      return res.status(200).send("Succesfully updated heathrecord, but hash not stored on ethereum");
+    } else if (recordHash !== storedHash) {
+      console.log("Hashes are different. Updating hash..");
+      truffle_connect.setRecordHash(patientID, recordHash, CONTRACT_MANAGER, (answer) => {
+        if (answer === "ERROR 404") {
+          console.log("ETH_WARNING: Encountered error when trying to set record hash in ethereum");
+          return res.status(200).send("Succesfully updated heathrecord, but there was a problem setting the healthrecord hash.");
+        }
+        return res.status(200).send("Successfully updated both healthrecord, and hash in ethereum");
+    });
+    } else {
+      console.log("Hashes are equal - no update of hash necessary");
+      return res.status(200).send("Succesfully updated heathrecord, no update of hash necessary");
+    }
   });
 });
 
