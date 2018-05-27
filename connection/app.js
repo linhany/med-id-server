@@ -1,14 +1,14 @@
 const contract = require('truffle-contract');
 
-const metacoin_artifact = require('../build/contracts/MetaCoin.json');
-var MetaCoin = contract(metacoin_artifact);
+const healthrecords_artifact = require('../build/contracts/HealthRecords.json');
+let HealthRecords = contract(healthrecords_artifact);
 
 module.exports = {
   start: function(callback) {
-    var self = this;
+    let self = this;
 
-    // Bootstrap the MetaCoin abstraction for Use.
-    MetaCoin.setProvider(self.web3.currentProvider);
+    // Bootstrap the HealthRecords abstraction for Use.
+    HealthRecords.setProvider(self.web3.currentProvider);
 
     // Get the initial account balance so it can be displayed.
     self.web3.eth.getAccounts(function(err, accs) {
@@ -27,40 +27,57 @@ module.exports = {
       callback(self.accounts);
     });
   },
-  refreshBalance: function(account, callback) {
-    var self = this;
+  getContractManager: function(callback) {
+    let self = this;
 
-    // Bootstrap the MetaCoin abstraction for Use.
-    MetaCoin.setProvider(self.web3.currentProvider);
+    // Bootstrap the HealthRecords abstraction for Use.
+    HealthRecords.setProvider(self.web3.currentProvider);
 
-    var meta;
-    MetaCoin.deployed().then(function(instance) {
-      meta = instance;
-      return meta.getBalance.call(account, {from: account});
+    let records;
+    HealthRecords.deployed().then(function(instance) {
+      records = instance;
+      return records.manager.call();
     }).then(function(value) {
         callback(value.valueOf());
     }).catch(function(e) {
         console.log(e);
-        callback("Error 404");
+        callback("ERROR 404");
     });
   },
-  sendCoin: function(amount, sender, receiver, callback) {
-    var self = this;
+  getRecordHash: function(patientId, account, callback) {
+    let self = this;
 
-    // Bootstrap the MetaCoin abstraction for Use.
-    MetaCoin.setProvider(self.web3.currentProvider);
+    // Bootstrap the HealthRecords abstraction for Use.
+    HealthRecords.setProvider(self.web3.currentProvider);
 
-    var meta;
-    MetaCoin.deployed().then(function(instance) {
-      meta = instance;
-      return meta.sendCoin(receiver, amount, {from: sender});
-    }).then(function() {
-      self.refreshBalance(sender, function (answer) {
-        callback(answer);
-      });
+    let records;
+    HealthRecords.deployed().then(function(instance) {
+      records = instance;
+      return records.getRecordHash.call(patientId, {from: account});
+    }).then(function(value) {
+        callback(value.valueOf());
     }).catch(function(e) {
-      console.log(e);
-      callback("ERROR 404");
+        console.log(e);
+        callback("ERROR 404");
+    });
+  },
+  setRecordHash: function(patientId, recordHash, account, callback) {
+    let self = this;
+
+    // Bootstrap the HealthRecords abstraction for Use.
+    HealthRecords.setProvider(self.web3.currentProvider);
+
+    console.debug("setRecordHash(): account used is " + account);
+
+    let records;
+    HealthRecords.deployed().then(function(instance) {
+      records = instance;
+      return records.setRecordHash(patientId, recordHash, {from: account});
+    }).then(function(value) {
+        callback(value.valueOf());
+    }).catch(function(e) {
+        console.log(e);
+        callback("ERROR 404");
     });
   }
 }

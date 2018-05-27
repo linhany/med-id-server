@@ -1,12 +1,12 @@
 {
-  "name": "Express-Box",
-  "version": "0.0.2",
-  "description": "Make API-Endpoints for Ethereum BlockChain",
+  "name": "med-id-server",
+  "version": "0.0.1",
+  "description": "Med.ID Express Server",
   "scripts": {
     "start": "nodemon server.js",
     "test": "truffle test test/*"
   },
-  "author": "Arvind & Pranav",
+  "author": "Med.ID",
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.22.2",
