@@ -276,10 +276,6 @@ let showNewPatient = false;
 
 // return the current day appointments for a doctor
 app.get('/doctor/:id/appointment', (req, res) => {
-  console.log(process.env.MNEMONIC)
-  console.log(process.env.RINKEBY_INFURA_URL) 
-  console.log(process.env.MONGOOSE_URL)
-
   console.log("**** GET /doctor/:id/appointment ****");
 
   let appointments = {}
