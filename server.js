@@ -10,11 +10,15 @@ const crypto = require('./crypto')
 const Doctor = require('./Doctor');
 const HealthRecord = require('./HealthRecord');
 const {CONTRACT_MANAGER} = require('./contractManager');
-let {MNEMONIC, RINKEBY_INFURA_URL} = require('./secrets');
 
-// heroku setup envs
-MNEMONIC = MNEMONIC || process.env.MNEMONIC;
-RINKEBY_INFURA_URL = RINKEBY_INFURA_URL || process.env.RINKEBY_INFURA_URL;
+let MNEMONIC = process.env.MNEMONIC;
+let RINKEBY_INFURA_URL = process.env.RINKEBY_INFURA_URL;
+const fs = require('fs');
+if (fs.existsSync('./secrets.js')) {
+  const secrets = require('./secrets');
+  MNEMONIC = secrets.MNEMONIC;
+  RINKEBY_INFURA_URL = secrets.RINKEBY_INFURA_URL;
+}
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
