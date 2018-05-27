@@ -1,7 +1,7 @@
 // Allows us to use ES6 in our migrations and tests.
 require('babel-register')
 
-const {MNEMONIC, RINKEBY_INFURA_URL} = require('./secrets');
+const {MNEMONIC, RINKEBY_INFURA_URL} = (process.env.MNEMONIC, process.env.RINKEBY_INFURA_URL) || require('./secrets');
 const {CONTRACT_MANAGER} = require('./contractManager');
 
 let HDWalletProvider = require("truffle-hdwallet-provider");

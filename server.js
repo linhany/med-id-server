@@ -10,7 +10,7 @@ const crypto = require('./crypto')
 const Doctor = require('./Doctor');
 const HealthRecord = require('./HealthRecord');
 const {CONTRACT_MANAGER} = require('./contractManager');
-const {MNEMONIC, RINKEBY_INFURA_URL} = require('./secrets');
+const {MNEMONIC, RINKEBY_INFURA_URL} = (process.env.MNEMONIC, process.env.RINKEBY_INFURA_URL) || require('./secrets');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
