@@ -4,13 +4,13 @@ const db = require('./db');
 const port = process.env.PORT || 3000;
 const Web3 = require('web3');
 const truffle_connect = require('./connection/app.js');
+const HDWalletProvider = require("truffle-hdwallet-provider");
 const bodyParser = require('body-parser');
 const crypto = require('./crypto')
 const Doctor = require('./Doctor');
 const HealthRecord = require('./HealthRecord');
-
-let accounts;
-let contract_manager;
+const {CONTRACT_MANAGER} = require('./contractManager');
+const {MNEMONIC, RINKEBY_INFURA_URL} = require('./rinkeby');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -105,7 +105,7 @@ app.post('/doctor/:id/authorize', (req, res) => {
     // hash the decryptedHR, verify with the one on ETH blockchain (it should already be there!)
     let recordHash = crypto.computeStringHash(decryptedHR);
 
-    truffle_connect.getRecordHash(patientID, contract_manager, (answer) => {
+    truffle_connect.getRecordHash(patientID, CONTRACT_MANAGER, (answer) => {
       let storedHash = answer;
 
       if (answer === "ERROR 404") {
@@ -154,7 +154,7 @@ app.post('/doctor/:id/authorize', (req, res) => {
   });
 });
 
-// add record hash into blockchain
+// get record hash from blockchain
 app.get('/recordhash/:id', (req, res) => {
   console.log("**** GET /recordhash/:id ****");
   console.log(req.body);
@@ -162,7 +162,7 @@ app.get('/recordhash/:id', (req, res) => {
 
   if (!patientID) res.status(404).send("There must be a patient_id specified in the params.");
 
-  truffle_connect.getRecordHash(patientID, contractManager, (answer) => {
+  truffle_connect.getRecordHash(patientID, CONTRACT_MANAGER, (answer) => {
     if (answer === "ERROR 404") {
       console.log("ETH_WARNING: Encountered error when trying to get record hash from ethereum");
       return res.status(500).send("There was a problem finding the healthrecord hash.");
@@ -183,7 +183,7 @@ app.post('/recordhash', (req, res) => {
 
   let recordHash = crypto.computeStringHash(healthrecord);
 
-  truffle_connect.setRecordHash(patientID, recordHash, contractManager, (answer) => {
+  truffle_connect.setRecordHash(patientID, recordHash, CONTRACT_MANAGER, (answer) => {
     if (answer === "ERROR 404") {
       console.log("ETH_WARNING: Encountered error when trying to set record hash in ethereum");
       return res.status(500).send("There was a problem setting the healthrecord hash.");
@@ -192,6 +192,7 @@ app.post('/recordhash', (req, res) => {
   });
 });
 
+// get manager of contract from blockchain
 app.get('/contractmanager', (req, res) => {
   console.log("**** GET /contractmanager ****");
 
@@ -264,21 +265,6 @@ app.post('/healthrecord/:id', (req, res) => {
 });
 
 app.listen(port, () => {
-
-  if (typeof web3 !== 'undefined') {
-    console.warn("Using web3 detected from external source. If you find that your accounts don't appear or you have 0 MetaCoin, ensure you've configured that source properly. If using MetaMask, see the following link. Feel free to delete this warning. :) http://truffleframework.com/tutorials/truffle-and-metamask")
-    // Use Mist/MetaMask's provider
-    truffle_connect.web3 = new Web3(web3.currentProvider);
-  } else {
-    console.warn("No web3 detected. Falling back to http://127.0.0.1:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
-    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-    truffle_connect.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-  }
-  console.log("Express Listening at http://localhost:" + port);
-  truffle_connect.start(function (answer) {
-    accounts = answer;
-    contractManager = accounts[0];
-    console.log("Contract Manager: " + contractManager);
-    console.log("Accounts: " + accounts);
-  })
+  truffle_connect.web3 = new Web3(new HDWalletProvider(MNEMONIC, RINKEBY_INFURA_URL));
+  console.log("Express Listening on port " + port);
 });
