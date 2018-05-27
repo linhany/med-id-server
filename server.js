@@ -10,7 +10,7 @@ const crypto = require('./crypto')
 const Doctor = require('./Doctor');
 const HealthRecord = require('./HealthRecord');
 const {CONTRACT_MANAGER} = require('./contractManager');
-const {MNEMONIC, RINKEBY_INFURA_URL} = require('./rinkeby');
+const {MNEMONIC, RINKEBY_INFURA_URL} = require('./secrets');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -157,7 +157,6 @@ app.post('/doctor/:id/authorize', (req, res) => {
 // get record hash from blockchain
 app.get('/recordhash/:id', (req, res) => {
   console.log("**** GET /recordhash/:id ****");
-  console.log(req.body);
   patientID = req.params.id;
 
   if (!patientID) res.status(404).send("There must be a patient_id specified in the params.");
@@ -263,6 +262,86 @@ app.post('/healthrecord/:id', (req, res) => {
     res.status(200).send("Successfully updated.");
   });
 });
+
+// ======================================= MOCK ENDPOINTS =======================================
+let showNewPatient = false;
+
+// return the current day appointments for a doctor
+app.get('/doctor/:id/appointment', (req, res) => {
+  console.log("**** GET /doctor/:id/appointment ****");
+
+  let appointments = {}
+  appointments["current_day_appointments"] = [];
+
+  let names = ["Jacky", "John", "Oliver", "Benjamin", "James"];
+  const details = ["34Y/Female", "30Y/Male", "25Y/Male", "20Y/Male", "35Y/Male"];
+  const durationInMinutes = [20, 15, 15, 15, 30];
+  const minutesBeforeNext = [60, 10, 15, 25, 20];
+  const lastAppts = ["10/13", "12/15", "-", "-", "-"]
+
+  const currentTimeWithAddedMinutes = (minutes) => {
+    let date = new Date();
+    date.setMinutes(date.getMinutes() + minutes);
+    minutes = date.getMinutes();
+    minutes = minutes < 10 ? '0'+minutes : minutes; // minute formatting
+    return [date.getHours(), minutes].join(':');
+  }
+
+  if (req.params.id != 1) {
+    names = ["Katie", "Jonathan", "Hubert", "Marcus", "Jake"];
+    newPatientData = {
+      patientName: "Cecilia",
+      patientDetails: "21Y/Female",
+      appointmentTime: currentTimeWithAddedMinutes(0),
+      visitStatus: "Appointment",
+      appointmentDuration : 30,
+      lastAppt: "-"
+    }
+    appointments["current_day_appointments"].push(newPatientData);
+  } else if (showNewPatient) {
+    newPatientData = {
+      patientName: "Cecilia",
+      patientDetails: "21Y/Female",
+      appointmentTime: currentTimeWithAddedMinutes(0),
+      visitStatus: "Walk-in",
+      appointmentDuration : 30,
+      lastAppt: "-"
+    }
+    appointments["current_day_appointments"].push(newPatientData);
+  }
+
+  let minutesOffset = 0;
+  for (i in names) {
+    minutesOffset += minutesBeforeNext[i];
+    let patientName = names[i];
+    let patientDetails = details[i];
+    let lastAppt = lastAppts[i];
+    let appointmentTime = currentTimeWithAddedMinutes(minutesOffset);
+    let appointmentDuration = durationInMinutes[i];
+    minutesOffset += durationInMinutes[i];
+
+    let data = {
+      patientName: patientName,
+      patientDetails: patientDetails,
+      appointmentTime: appointmentTime,
+      visitStatus: "Appointment",
+      appointmentDuration : appointmentDuration,
+      lastAppt: lastAppt
+    }
+    appointments["current_day_appointments"].push(data);
+  }
+
+  res.status(200).send(appointments);
+});
+
+// make a current day walk-in appointment for a doctor
+app.post('/doctor/:id/appointment', (req, res) => {
+  console.log("**** POST /doctor/:id/appointment ****");
+
+  showNewPatient = true;
+  res.status(200).send("Added new appointment");
+});
+// =============================================================================================
 
 app.listen(port, () => {
   truffle_connect.web3 = new Web3(new HDWalletProvider(MNEMONIC, RINKEBY_INFURA_URL));
