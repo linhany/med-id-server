@@ -95,11 +95,6 @@ app.post('/doctor/:id/authorize', (req, res) => {
     console.debug("Patient Identifier: " + patientID);
 
     console.log("------------------ TEMPORARY STEP (Mobile App will do this) ------------------")
-    console.log("Healthrecord is currently: " + healthrecord);
-    console.log("Simulating an encrypted healthrecord - doing encryption");
-    healthrecord = crypto.encryptStringWithSymmetricKey(healthrecord, key)
-    console.log("The encrypted healthrecord: " + healthrecord);
-
     console.log("Key is currently: " + key);
     console.log("Simulating an encrypted key - doing encryption");
     key = crypto.encryptStringWithPublicKey(key, req.params.id);

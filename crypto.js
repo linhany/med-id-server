@@ -7,7 +7,7 @@ const inputEncoding = 'utf8';
 const outputEncoding = 'base64';
 
 let generateKeys = () => {
-  const key = new NodeRSA({b: 128});
+  const key = new NodeRSA({b: 512});
   let privateKey = key.exportKey('pkcs8');
   let publicKey = key.exportKey('pkcs8-public');
   return { publicKey: Buffer.from(publicKey).toString('base64'), privateKey: Buffer.from(privateKey).toString('base64')};
@@ -15,12 +15,14 @@ let generateKeys = () => {
 
 let encryptStringWithPublicKey = (toEncrypt, publicKeyB64) => {
   const publicKey = Buffer.from(publicKeyB64, 'base64').toString('utf8');
-  return crypto.publicEncrypt(publicKey, Buffer.from(toEncrypt)).toString('base64')
+  const key = new NodeRSA(publicKey);
+  return key.encrypt(toEncrypt, 'base64');
 }
 
 let decryptStringWithPrivateKey = (toDecrypt, privateKeyB64) => {
   const privateKey = Buffer.from(privateKeyB64, 'base64').toString('utf8');
-  return crypto.privateDecrypt(privateKey, Buffer.from(toDecrypt)).toString('utf8')
+  const key = new NodeRSA(privateKey);
+  return key.decrypt(toDecrypt, 'utf8');
 }
 
 let encryptStringWithSymmetricKey = (toEncrypt, key) => {
