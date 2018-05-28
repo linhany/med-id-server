@@ -7,7 +7,7 @@ const inputEncoding = 'utf8';
 const outputEncoding = 'base64';
 
 let generateKeys = () => {
-  const key = new NodeRSA({b: 512});
+  const key = new NodeRSA({b: 128});
   let privateKey = key.exportKey('pkcs8');
   let publicKey = key.exportKey('pkcs8-public');
   return { publicKey: Buffer.from(publicKey).toString('base64'), privateKey: Buffer.from(privateKey).toString('base64')};
