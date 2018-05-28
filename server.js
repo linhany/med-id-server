@@ -322,8 +322,10 @@ app.get('/doctor/:id/appointment', (req, res) => {
     let date = new Date();
     date.setMinutes(date.getMinutes() + minutes);
     minutes = date.getMinutes();
+    hours = date.getHours();
     minutes = minutes < 10 ? '0'+minutes : minutes; // minute formatting
-    return [date.getHours(), minutes].join(':');
+    hours = hours < 10 ? '0'+hours : hours; // hours formatting
+    return [hours, minutes].join(':');
   }
 
   if (req.params.id != 1) {
