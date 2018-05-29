@@ -373,6 +373,14 @@ app.post('/doctor/:id/appointment', (req, res) => {
   showNewPatient = true;
   res.status(200).send("Added new appointment");
 });
+
+// hide the walk-in appointment
+app.post('/doctor/:id/appointment/hide', (req, res) => {
+  console.log("**** POST /doctor/:id/appointment/hide ****");
+
+  showNewPatient = false;
+  res.status(200).send("Hidden appointment");
+});
 // =============================================================================================
 
 app.listen(port, () => {
