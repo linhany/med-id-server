@@ -316,11 +316,7 @@ app.get('/doctor/:id/appointment', (req, res) => {
   const currentTimeWithAddedMinutes = (minutes) => {
     let date = new Date();
     date.setMinutes(date.getMinutes() + minutes);
-    minutes = date.getMinutes();
-    hours = date.getHours();
-    minutes = minutes < 10 ? '0'+minutes : minutes; // minute formatting
-    hours = hours < 10 ? '0'+hours : hours; // hours formatting
-    return [hours, minutes].join(':');
+    return date;
   }
 
   if (req.params.id != 1) {
@@ -329,8 +325,8 @@ app.get('/doctor/:id/appointment', (req, res) => {
       patientName: "Cecilia",
       patientDetails: "21Y/Female",
       appointmentTime: currentTimeWithAddedMinutes(0),
+      appointmentEndTime: currentTimeWithAddedMinutes(30),
       visitStatus: "Appointment",
-      appointmentDuration : 30,
       lastAppt: "-"
     }
     appointments["current_day_appointments"].push(newPatientData);
@@ -339,29 +335,29 @@ app.get('/doctor/:id/appointment', (req, res) => {
       patientName: "Cecilia",
       patientDetails: "21Y/Female",
       appointmentTime: currentTimeWithAddedMinutes(0),
+      appointmentEndTime: currentTimeWithAddedMinutes(30),
       visitStatus: "Walk-in",
-      appointmentDuration : 30,
       lastAppt: "-"
     }
     appointments["current_day_appointments"].push(newPatientData);
   }
 
   let minutesOffset = 0;
-  for (i in names) {
+  for (const i in names) {
     minutesOffset += minutesBeforeNext[i];
     let patientName = names[i];
     let patientDetails = details[i];
     let lastAppt = lastAppts[i];
     let appointmentTime = currentTimeWithAddedMinutes(minutesOffset);
-    let appointmentDuration = durationInMinutes[i];
     minutesOffset += durationInMinutes[i];
+    let appointmentEndTime = currentTimeWithAddedMinutes(minutesOffset);
 
     let data = {
       patientName: patientName,
       patientDetails: patientDetails,
       appointmentTime: appointmentTime,
+      appointmentEndTime : appointmentEndTime,
       visitStatus: "Appointment",
-      appointmentDuration : appointmentDuration,
       lastAppt: lastAppt
     }
     appointments["current_day_appointments"].push(data);
