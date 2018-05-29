@@ -370,7 +370,7 @@ app.get('/doctor/:id/appointment', (req, res) => {
       patientName: patientName,
       patientDetails: patientDetails,
       appointmentTime: appointmentTime,
-      appointmentStartTime: appointmentTime,
+      appointmentStartTime: appointmentStartTime,
       appointmentEndTime : appointmentEndTime,
       visitStatus: "Appointment",
       lastAppt: lastAppt
