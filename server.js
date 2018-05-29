@@ -261,6 +261,7 @@ app.post('/healthrecord/:id', (req, res) => {
   console.log(req.body)
 
   healthrecord = req.body.healthrecord;
+  patientID = req.body.id;
   if (!healthrecord) res.status(404).send("There must be a healthrecord specified in the body.");
 
   HealthRecord.update({_id: req.params.id}, req.body, function(err, update, resp) {
