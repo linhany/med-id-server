@@ -320,12 +320,23 @@ app.get('/doctor/:id/appointment', (req, res) => {
     return date;
   }
 
+  const currentHoursMinsWithAddedMinutes = (minutes) => {
+    let date = new Date();
+    date.setMinutes(date.getMinutes() + minutes);
+    minutes = date.getMinutes();
+    hours = date.getHours();
+    minutes = minutes < 10 ? '0'+minutes : minutes; // minute formatting
+    hours = hours < 10 ? '0'+hours : hours; // hours formatting
+    return [hours, minutes].join(':');
+  }
+
   if (req.params.id != 1) {
     names = ["Katie", "Jonathan", "Hubert", "Marcus", "Jake"];
     newPatientData = {
       patientName: "Cecilia",
       patientDetails: "21Y/Female",
-      appointmentTime: currentTimeWithAddedMinutes(0),
+      appointmentTime: currentHoursMinsWithAddedMinutes(0),
+      appointmentStartTime: currentTimeWithAddedMinutes(0),
       appointmentEndTime: currentTimeWithAddedMinutes(30),
       visitStatus: "Appointment",
       lastAppt: "-"
@@ -335,7 +346,8 @@ app.get('/doctor/:id/appointment', (req, res) => {
     newPatientData = {
       patientName: "Cecilia",
       patientDetails: "21Y/Female",
-      appointmentTime: currentTimeWithAddedMinutes(0),
+      appointmentTime: currentHoursMinsWithAddedMinutes(0),
+      appointmentStartTime: currentTimeWithAddedMinutes(0),
       appointmentEndTime: currentTimeWithAddedMinutes(30),
       visitStatus: "Walk-in",
       lastAppt: "-"
@@ -349,7 +361,8 @@ app.get('/doctor/:id/appointment', (req, res) => {
     let patientName = names[i];
     let patientDetails = details[i];
     let lastAppt = lastAppts[i];
-    let appointmentTime = currentTimeWithAddedMinutes(minutesOffset);
+    let appointmentTime = currentHoursMinsWithAddedMinutes(minutesOffset);
+    let appointmentStartTime = currentTimeWithAddedMinutes(minutesOffset);
     minutesOffset += durationInMinutes[i];
     let appointmentEndTime = currentTimeWithAddedMinutes(minutesOffset);
 
@@ -357,6 +370,7 @@ app.get('/doctor/:id/appointment', (req, res) => {
       patientName: patientName,
       patientDetails: patientDetails,
       appointmentTime: appointmentTime,
+      appointmentStartTime: appointmentTime,
       appointmentEndTime : appointmentEndTime,
       visitStatus: "Appointment",
       lastAppt: lastAppt
